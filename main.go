@@ -12,16 +12,16 @@ import (
 
 // Structure
 type Movie struct {
-	id       string    `json:"id"`
-	isbn     string    `json:"isbn"`
-	title    string    `json:"title"`
-	director *Director `json:"director"`
+	Id       string    `json:"id"`
+	Isbn     string    `json:"isbn"`
+	Title    string    `json:"title"`
+	Director *Director `json:"director"`
 }
 
 type Director struct {
-	firstName   string `json:"first_name"`
-	lastName    string `json:"last_name"`
-	dateOfBirth string `json:"date_of_birth"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	DateOfBirth string `json:"date_of_birth"`
 }
 
 var movies []Movie
@@ -29,7 +29,7 @@ var movies []Movie
 func main() {
 	r := mux.NewRouter()
 
-	movies = append(movies, Movie{id: "1", isbn: "123456", title: "Learning Go", director: &Director{firstName: "Carlos", lastName: "Salazar", dateOfBirth: "25-06-1990"}})
+	movies = append(movies, Movie{Id: "1", Isbn: "123456", Title: "Learning Go", Director: &Director{FirstName: "Carlos", LastName: "Salazar", DateOfBirth: "25-06-1990"}})
 
 	r.HandleFunc("/movies", getMovies).Methods("GET")
 	r.HandleFunc("/movies/{id}", getMovie).Methods("GET")
@@ -37,12 +37,13 @@ func main() {
 	r.HandleFunc("/movies/{id}", updateMovie).Methods("PUT")
 	r.HandleFunc("/movies/{id}", deleteMovie).Methods("DELETE")
 
+	fmt.Printf("Length of movies array: %d\n", len(movies))
 	fmt.Printf("Starting server at port 8000\n")
 	log.Fatal(http.ListenAndServe(":8000", r))
 }
 
 func getMovies(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 
 	json.NewEncoder(w).Encode(movies)
 }
@@ -52,7 +53,7 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	for _, item := range movies {
-		if item.id == params["id"] {
+		if item.Id == params["id"] {
 			json.NewEncoder(w).Encode(item)
 			return
 		}
@@ -65,7 +66,7 @@ func createMovie(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&movie)
 
 	//movie.id = strconv.Itoa(rand.Intn(10000)) // CREATE A NEW ID FOR MOVIE WITH A RANDOM NUMBER
-	movie.id = createIdForMovie()
+	movie.Id = createIdForMovie()
 	movies = append(movies, movie)
 
 	json.NewEncoder(w).Encode(movie)
@@ -75,7 +76,7 @@ func createIdForMovie() string {
 	lastId := 0
 
 	for _, item := range movies {
-		itemId, _ := strconv.Atoi(item.id)
+		itemId, _ := strconv.Atoi(item.Id)
 		if itemId > lastId {
 			lastId = itemId
 		}
@@ -89,11 +90,11 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	for index, item := range movies {
-		if item.id == params["id"] {
+		if item.Id == params["id"] {
 			movies = deleteFromSlice(movies, index)    // we delete the movie with the index
 			var movie Movie                            // Then create a new movie with the same id
 			_ = json.NewDecoder(r.Body).Decode(&movie) // decode the body of the request and assign it to the new movie
-			movie.id = item.id                         // then assign the id of the movie to be updated
+			movie.Id = item.Id                         // then assign the id of the movie to be updated
 			movies = append(movies, movie)             // finally we append it to the movies slice
 			json.NewEncoder(w).Encode(movie)           // and return the movie
 			return
@@ -110,7 +111,7 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	for index, item := range movies {
-		if item.id == params["id"] {
+		if item.Id == params["id"] {
 			movies = deleteFromSlice(movies, index)
 			break
 		}
